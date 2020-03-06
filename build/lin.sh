@@ -41,6 +41,9 @@ VERSION_FRIBIDI=1.0.9
 VERSION_PANGO=1.44.7
 VERSION_SVG=2.47.3
 VERSION_GIF=5.1.4
+VERSION_HEIF=1.6.2
+VERSION_DE265=1.0.5
+VERSION_IMAGEQUANT=2.12.6
 
 # Remove patch version component
 without_patch() {
@@ -80,6 +83,9 @@ version_latest "fribidi" "$VERSION_FRIBIDI" "857"
 version_latest "pango" "$VERSION_PANGO" "11783"
 version_latest "svg" "$VERSION_SVG" "5420"
 #version_latest "gif" "$VERSION_GIF" "1158" # v5.1.5+ provides a Makefile only so will require custom cross-compilation setup
+version_latest "imagequant" "$VERSION_IMAGEQUANT" "12768"
+version_latest "heif" "$VERSION_HEIF" "64439"
+version_latest "de265" "$VERSION_DE265" "11239"
 if [ "$ALL_AT_VERSION_LATEST" = "false" ]; then exit 1; fi
 
 # Download and build dependencies from source
@@ -171,6 +177,12 @@ cd ${DEPS}/tiff
 if [ -n "${CHOST}" ]; then autoreconf -fiv; fi
 ./configure --host=${CHOST} --prefix=${TARGET} --enable-shared --disable-static --disable-dependency-tracking --disable-mdi --disable-pixarlog --disable-cxx
 make install-strip
+
+mkdir ${DEPS}/imagequant
+curl -Ls https://github.com/ImageOptim/libimagequant/archive/${VERSION_IMAGEQUANT}.tar.gz | tar xzC ${DEPS}/imagequant --strip-components=1
+cd ${DEPS}/imagequant
+./configure --host=${CHOST} --prefix=${TARGET} --enable-shared --disable-static --disable-dependency-tracking
+make install
 
 mkdir ${DEPS}/orc
 curl -Ls https://gstreamer.freedesktop.org/data/src/orc/orc-${VERSION_ORC}.tar.xz | tar xJC ${DEPS}/orc --strip-components=1
@@ -268,6 +280,20 @@ cd ${DEPS}/gif
 ./configure --host=${CHOST} --prefix=${TARGET} --enable-shared --disable-static --disable-dependency-tracking
 make install-strip
 
+mkdir ${DEPS}/de265
+curl -Ls https://github.com/strukturag/libde265/releases/download/v${VERSION_DE265}/libde265-${VERSION_DE265}.tar.gz | tar xzC ${DEPS}/de265 --strip-components=1
+cd ${DEPS}/de265
+./configure --host=${CHOST} --prefix=${TARGET} --enable-shared --disable-static --disable-dependency-tracking \
+  --disable-dec265 --disable-sherlock265
+make install-strip
+
+mkdir ${DEPS}/heif
+curl -Ls https://github.com/strukturag/libheif/releases/download/v${VERSION_HEIF}/libheif-${VERSION_HEIF}.tar.gz | tar xzC ${DEPS}/heif --strip-components=1
+cd ${DEPS}/heif
+./configure --host=${CHOST} --prefix=${TARGET} --enable-shared --disable-static --disable-dependency-tracking \
+  --disable-examples --disable-go --disable-gdk-pixbuf
+make install-strip
+
 mkdir ${DEPS}/vips
 curl -Ls https://github.com/libvips/libvips/releases/download/v${VERSION_VIPS}/vips-${VERSION_VIPS}.tar.gz | tar xzC ${DEPS}/vips --strip-components=1
 cd ${DEPS}/vips
@@ -275,7 +301,8 @@ cd ${DEPS}/vips
   --disable-debug --disable-introspection --without-python --without-fftw \
   --without-magick --without-pangoft2 --without-ppm --without-analyze --without-radiance \
   --with-zip-includes=${TARGET}/include --with-zip-libraries=${TARGET}/lib \
-  --with-jpeg-includes=${TARGET}/include --with-jpeg-libraries=${TARGET}/lib
+  --with-jpeg-includes=${TARGET}/include --with-jpeg-libraries=${TARGET}/lib \
+  --with-imagequant
 make install-strip
 
 # Remove the old C++ bindings
@@ -293,6 +320,7 @@ printf "{\n\
   \"cairo\": \"${VERSION_CAIRO}\",\n\
   \"exif\": \"${VERSION_EXIF}\",\n\
   \"expat\": \"${VERSION_EXPAT}\",\n\
+  \"de265\": \"${VERSION_DE265}\",\n\
   \"ffi\": \"${VERSION_FFI}\",\n\
   \"fontconfig\": \"${VERSION_FONTCONFIG}\",\n\
   \"freetype\": \"${VERSION_FREETYPE}\",\n\
@@ -303,6 +331,8 @@ printf "{\n\
   \"glib\": \"${VERSION_GLIB}\",\n\
   \"gsf\": \"${VERSION_GSF}\",\n\
   \"harfbuzz\": \"${VERSION_HARFBUZZ}\",\n\
+  \"heif\": \"${VERSION_HEIF}\",\n\
+  \"imagequant\": \"${VERSION_IMAGEQUANT}\",\n\
   \"jpeg\": \"${VERSION_JPEG}\",\n\
   \"lcms\": \"${VERSION_LCMS2}\",\n\
   \"orc\": \"${VERSION_ORC}\",\n\
