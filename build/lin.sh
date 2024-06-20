@@ -119,6 +119,7 @@ VERSION_RSVG=2.58.91
 VERSION_AOM=3.9.1
 VERSION_HEIF=1.17.6
 VERSION_CGIF=0.4.1
+VERSION_DE265=1.0.15
 
 # Remove patch version component
 without_patch() {
@@ -177,6 +178,7 @@ version_latest "rsvg" "$VERSION_RSVG" "5420"
 version_latest "aom" "$VERSION_AOM" "17628"
 version_latest "heif" "$VERSION_HEIF" "strukturag/libheif"
 version_latest "cgif" "$VERSION_CGIF" "dloebl/cgif"
+version_latest "de265" "$VERSION_DE265" "strukturag/libde265"
 if [ "$ALL_AT_VERSION_LATEST" = "false" ]; then exit 1; fi
 
 # Download and build dependencies from source
@@ -261,6 +263,13 @@ AOM_AS_FLAGS="${FLAGS}" cmake -G"Unix Makefiles" \
   ..
 make install/strip
 
+mkdir ${DEPS}/de265
+curl -Ls https://github.com/strukturag/libde265/releases/download/v${VERSION_DE265}/libde265-${VERSION_DE265}.tar.gz | tar xzC ${DEPS}/de265 --strip-components=1
+cd ${DEPS}/de265
+./configure --host=${CHOST} --prefix=${TARGET} --enable-shared --disable-static --disable-dependency-tracking \
+  --disable-dec265 --disable-sherlock265
+make install-strip
+
 mkdir ${DEPS}/heif
 $CURL https://github.com/strukturag/libheif/releases/download/v${VERSION_HEIF}/libheif-${VERSION_HEIF}.tar.gz | tar xzC ${DEPS}/heif --strip-components=1
 cd ${DEPS}/heif
@@ -268,7 +277,7 @@ cd ${DEPS}/heif
 sed -i'.bak' "/^cmake_minimum_required/s/3.16.3/3.12/" CMakeLists.txt
 CFLAGS="${CFLAGS} -O3" CXXFLAGS="${CXXFLAGS} -O3" cmake -G"Unix Makefiles" \
   -DCMAKE_TOOLCHAIN_FILE=${ROOT}/Toolchain.cmake -DCMAKE_INSTALL_PREFIX=${TARGET} -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_BUILD_TYPE=Release \
-  -DBUILD_SHARED_LIBS=FALSE -DENABLE_PLUGIN_LOADING=0 -DWITH_EXAMPLES=0 -DWITH_LIBDE265=0 -DWITH_X265=0
+  -DBUILD_SHARED_LIBS=FALSE -DENABLE_PLUGIN_LOADING=0 -DWITH_EXAMPLES=0 -DWITH_LIBDE265=1 -DWITH_X265=0
 make install/strip
 
 mkdir ${DEPS}/jpeg
@@ -516,6 +525,7 @@ printf "{\n\
   \"archive\": \"${VERSION_ARCHIVE}\",\n\
   \"cairo\": \"${VERSION_CAIRO}\",\n\
   \"cgif\": \"${VERSION_CGIF}\",\n\
+  \"de265\": \"${VERSION_DE265}\",\n\
   \"exif\": \"${VERSION_EXIF}\",\n\
   \"expat\": \"${VERSION_EXPAT}\",\n\
   \"ffi\": \"${VERSION_FFI}\",\n\
