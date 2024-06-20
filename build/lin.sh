@@ -92,10 +92,10 @@ unset PKG_CONFIG_PATH
 CURL="curl --silent --location --retry 3 --retry-max-time 30"
 
 # Dependency version numbers
-VERSION_ZLIB_NG=2.2.0
+VERSION_ZLIB_NG=2.1.6
 VERSION_FFI=3.4.6
 VERSION_GLIB=2.80.3
-VERSION_XML2=2.13.1
+VERSION_XML2=2.13.0
 VERSION_EXIF=0.6.24
 VERSION_LCMS2=2.16
 VERSION_MOZJPEG=4.1.5
@@ -118,8 +118,8 @@ VERSION_PANGO=1.54.0
 VERSION_RSVG=2.58.91
 VERSION_AOM=3.9.1
 VERSION_HEIF=1.17.6
-VERSION_CGIF=0.4.1
-VERSION_DE265=1.0.15
+VERSION_CGIF=0.4.0
+VERSION_DE265=1.0.13
 
 # Remove patch version component
 without_patch() {
@@ -132,6 +132,7 @@ without_prerelease() {
 
 # Check for newer versions
 # Skip by setting the VERSION_LATEST_REQUIRED environment variable to "false"
+VERSION_LATEST_REQUIRED=false
 ALL_AT_VERSION_LATEST=true
 version_latest() {
   if [ "$VERSION_LATEST_REQUIRED" == "false" ]; then
