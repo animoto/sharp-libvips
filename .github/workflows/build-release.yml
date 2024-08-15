@@ -26,6 +26,8 @@ jobs:
         include:
           - os: macos-12
             platform: 'darwin-x64'
+          - os: macos-12
+            platform: 'darwin-arm64v8'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
