@@ -395,7 +395,7 @@ $CURL https://cairographics.org/releases/pixman-${VERSION_PIXMAN}.tar.gz | tar x
 cd ${DEPS}/pixman
 meson setup _build --default-library=static --buildtype=release --strip --prefix=${TARGET} --datadir=${TARGET}/share ${MESON} \
   -Dlibpng=disabled -Dgtk=disabled -Dopenmp=disabled -Dtests=disabled -Ddemos=disabled \
-  ${DARWIN_ARM:+-Da64-neon=disabled}
+  ${WITHOUT_NEON:+-Da64-neon=disabled}
 meson install -C _build --tag devel
 
 mkdir ${DEPS}/cairo
