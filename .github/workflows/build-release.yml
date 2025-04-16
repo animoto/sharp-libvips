@@ -49,8 +49,8 @@ jobs:
         run: |
           python3 -m venv venv
           source venv/bin/activate
-          pip install meson ninja packaging
-          brew install automake nasm
+          pip install ninja packaging
+          brew install automake meson nasm
       - name: Build ${{ matrix.platform }}
         id: build-release
         run: ./build.sh $(cat LIBVIPS_VERSION) ${{ matrix.platform }}
