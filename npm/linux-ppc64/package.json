@@ -1,13 +1,13 @@
 {
-  "name": "@img/sharp-libvips-dev",
+  "name": "@img/sharp-libvips-linux-ppc64",
   "version": "1.1.0-rc2",
-  "description": "Header files and C++ sources for libvips and dependencies required when compiling sharp from source",
+  "description": "Prebuilt libvips and dependencies for use with sharp on Linux (glibc) ppc64le",
   "author": "Lovell Fuller <npm@lovell.info>",
   "homepage": "https://sharp.pixelplumbing.com",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/lovell/sharp-libvips.git",
-    "directory": "npm/dev"
+    "directory": "npm/linux-ppc64"
   },
   "license": "LGPL-3.0-or-later",
   "funding": {
@@ -18,13 +18,25 @@
     "access": "public"
   },
   "files": [
-    "include",
-    "cplusplus",
+    "lib",
     "versions.json"
   ],
-  "type": "commonjs",
   "exports": {
-    "./include": "./include/index.js",
-    "./cplusplus": "./cplusplus/index.js"
-  }
+    "./lib": "./lib/index.js",
+    "./package": "./package.json",
+    "./versions": "./versions.json"
+  },
+  "type": "commonjs",
+  "config": {
+    "glibc": ">=2.31"
+  },
+  "os": [
+    "linux"
+  ],
+  "libc": [
+    "glibc"
+  ],
+  "cpu": [
+    "ppc64"
+  ]
 }

@@ -49,9 +49,9 @@ RUN \
     --profile minimal \
     --default-host aarch64-unknown-linux-gnu \
     && \
-  cargo install cargo-c && \
+  cargo install cargo-c --locked && \
   ln -s /usr/bin/cmake3 /usr/bin/cmake && \
-  pip3 install meson ninja packaging
+  pip3 install meson ninja packaging tomli
 
 # Compiler settings
 ENV \
