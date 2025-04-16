@@ -267,6 +267,7 @@ AOM_AS_FLAGS="${FLAGS}" cmake -G"Unix Makefiles" \
   ..
 make install/strip
 
+# Support HEIC https://github.com/animoto/sharp-libvips/commit/b83e6d195f01bdcfe07fd3a8b6049eb066244c51
 mkdir ${DEPS}/de265
 curl -Ls https://github.com/strukturag/libde265/releases/download/v${VERSION_DE265}/libde265-${VERSION_DE265}.tar.gz | tar xzC ${DEPS}/de265 --strip-components=1
 cd ${DEPS}/de265
