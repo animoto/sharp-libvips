@@ -199,7 +199,7 @@ if [ "${PLATFORM%-*}" == "linuxmusl" ] || [ "$DARWIN" = true ]; then
   mkdir ${DEPS}/proxy-libintl
   $CURL https://github.com/frida/proxy-libintl/archive/${VERSION_PROXY_LIBINTL}.tar.gz | tar xzC ${DEPS}/proxy-libintl --strip-components=1
   cd ${DEPS}/proxy-libintl
-  meson setup _build --default-library=static --buildtype=release --strip --prefix=${TARGET} ${MESON}
+  meson setup _build --default-library=static --buildtype=release --strip --prefix=${TARGET} --datadir=${TARGET}/share ${MESON}
   meson install -C _build --tag devel
 fi
 
@@ -225,7 +225,7 @@ mkdir ${DEPS}/glib
 $CURL https://download.gnome.org/sources/glib/$(without_patch $VERSION_GLIB)/glib-${VERSION_GLIB}.tar.xz | tar xJC ${DEPS}/glib --strip-components=1
 cd ${DEPS}/glib
 $CURL https://gist.github.com/kleisauke/284d685efa00908da99ea6afbaaf39ae/raw/36e32c79e7962c5ea96cbb3f9c629e9145253e30/glib-without-gregex.patch | patch -p1
-meson setup _build --default-library=static --buildtype=release --strip --prefix=${TARGET} ${MESON} \
+meson setup _build --default-library=static --buildtype=release --strip --prefix=${TARGET} --datadir=${TARGET}/share ${MESON} \
   --force-fallback-for=gvdb -Dintrospection=disabled -Dnls=disabled -Dlibmount=disabled -Dsysprof=disabled -Dlibelf=disabled \
   -Dtests=false -Dglib_assert=false -Dglib_checks=false -Dglib_debug=disabled ${DARWIN:+-Dbsymbolic_functions=false}
 # bin-devel is needed for glib-compile-resources
@@ -234,7 +234,7 @@ meson install -C _build --tag bin-devel,devel
 mkdir ${DEPS}/xml2
 $CURL https://download.gnome.org/sources/libxml2/$(without_patch $VERSION_XML2)/libxml2-${VERSION_XML2}.tar.xz | tar xJC ${DEPS}/xml2 --strip-components=1
 cd ${DEPS}/xml2
-meson setup _build --default-library=static --buildtype=release --strip --prefix=${TARGET} ${MESON} \
+meson setup _build --default-library=static --buildtype=release --strip --prefix=${TARGET} --datadir=${TARGET}/share ${MESON} \
   -Dminimum=true
 meson install -C _build --tag devel
 
@@ -251,7 +251,7 @@ make install-strip doc_DATA=
 mkdir ${DEPS}/lcms2
 $CURL https://github.com/mm2/Little-CMS/releases/download/lcms${VERSION_LCMS2}/lcms2-${VERSION_LCMS2}.tar.gz | tar xzC ${DEPS}/lcms2 --strip-components=1
 cd ${DEPS}/lcms2
-CFLAGS="${CFLAGS} -O3" meson setup _build --default-library=static --buildtype=release --strip --prefix=${TARGET} ${MESON}
+CFLAGS="${CFLAGS} -O3" meson setup _build --default-library=static --buildtype=release --strip --prefix=${TARGET} --datadir=${TARGET}/share ${MESON}
 meson install -C _build --tag devel
 
 mkdir ${DEPS}/aom
@@ -303,14 +303,14 @@ make install-strip dist_man_MANS=
 mkdir ${DEPS}/spng
 $CURL https://github.com/randy408/libspng/archive/v${VERSION_SPNG}.tar.gz | tar xzC ${DEPS}/spng --strip-components=1
 cd ${DEPS}/spng
-CFLAGS="${CFLAGS} -O3 -DSPNG_SSE=4" meson setup _build --default-library=static --buildtype=release --strip --prefix=${TARGET} ${MESON} \
+CFLAGS="${CFLAGS} -O3 -DSPNG_SSE=4" meson setup _build --default-library=static --buildtype=release --strip --prefix=${TARGET} --datadir=${TARGET}/share ${MESON} \
   -Dstatic_zlib=true -Dbuild_examples=false
 meson install -C _build --tag devel
 
 mkdir ${DEPS}/imagequant
 $CURL https://github.com/lovell/libimagequant/archive/v${VERSION_IMAGEQUANT}.tar.gz | tar xzC ${DEPS}/imagequant --strip-components=1
 cd ${DEPS}/imagequant
-CFLAGS="${CFLAGS} -O3" meson setup _build --default-library=static --buildtype=release --strip --prefix=${TARGET} ${MESON}
+CFLAGS="${CFLAGS} -O3" meson setup _build --default-library=static --buildtype=release --strip --prefix=${TARGET} --datadir=${TARGET}/share ${MESON}
 meson install -C _build --tag devel
 
 mkdir ${DEPS}/webp
@@ -343,7 +343,7 @@ build_freetype() {
   mkdir ${DEPS}/freetype
   $CURL https://github.com/freetype/freetype/archive/VER-${VERSION_FREETYPE//./-}.tar.gz | tar xzC ${DEPS}/freetype --strip-components=1
   cd ${DEPS}/freetype
-  meson setup _build --default-library=static --buildtype=release --strip --prefix=${TARGET} ${MESON} \
+  meson setup _build --default-library=static --buildtype=release --strip --prefix=${TARGET} --datadir=${TARGET}/share ${MESON} \
     -Dzlib=enabled -Dpng=enabled -Dbrotli=disabled -Dbzip2=disabled "$@"
   meson install -C _build --tag devel
 }
@@ -369,7 +369,7 @@ make install-strip libarchive_man_MANS=
 mkdir ${DEPS}/fontconfig
 $CURL https://www.freedesktop.org/software/fontconfig/release/fontconfig-${VERSION_FONTCONFIG}.tar.xz | tar xJC ${DEPS}/fontconfig --strip-components=1
 cd ${DEPS}/fontconfig
-meson setup _build --default-library=static --buildtype=release --strip --prefix=${TARGET} ${MESON} \
+meson setup _build --default-library=static --buildtype=release --strip --prefix=${TARGET} --datadir=${TARGET}/share ${MESON} \
   -Dcache-build=disabled -Ddoc=disabled -Dnls=disabled -Dtests=disabled -Dtools=disabled
 meson install -C _build --tag devel
 
@@ -378,7 +378,7 @@ $CURL https://github.com/harfbuzz/harfbuzz/archive/${VERSION_HARFBUZZ}.tar.gz | 
 cd ${DEPS}/harfbuzz
 # Disable utils
 sed -i'.bak' "/subdir('util')/d" meson.build
-meson setup _build --default-library=static --buildtype=release --strip --prefix=${TARGET} ${MESON} \
+meson setup _build --default-library=static --buildtype=release --strip --prefix=${TARGET} --datadir=${TARGET}/share ${MESON} \
   -Dgobject=disabled -Dicu=disabled -Dtests=disabled -Dintrospection=disabled -Ddocs=disabled -Dbenchmark=disabled ${DARWIN:+-Dcoretext=enabled}
 meson install -C _build --tag devel
 
@@ -394,7 +394,7 @@ build_freetype -Dharfbuzz=enabled
 mkdir ${DEPS}/pixman
 $CURL https://cairographics.org/releases/pixman-${VERSION_PIXMAN}.tar.gz | tar xzC ${DEPS}/pixman --strip-components=1
 cd ${DEPS}/pixman
-meson setup _build --default-library=static --buildtype=release --strip --prefix=${TARGET} ${MESON} \
+meson setup _build --default-library=static --buildtype=release --strip --prefix=${TARGET} --datadir=${TARGET}/share ${MESON} \
   -Dlibpng=disabled -Diwmmxt=disabled -Dgtk=disabled -Dopenmp=disabled -Dtests=disabled \
   ${DARWIN_ARM:+-Da64-neon=disabled}
 meson install -C _build --tag devel
@@ -402,7 +402,7 @@ meson install -C _build --tag devel
 mkdir ${DEPS}/cairo
 $CURL https://cairographics.org/releases/cairo-${VERSION_CAIRO}.tar.xz | tar xJC ${DEPS}/cairo --strip-components=1
 cd ${DEPS}/cairo
-meson setup _build --default-library=static --buildtype=release --strip --prefix=${TARGET} ${MESON} \
+meson setup _build --default-library=static --buildtype=release --strip --prefix=${TARGET} --datadir=${TARGET}/share ${MESON} \
   ${LINUX:+-Dquartz=disabled} ${DARWIN:+-Dquartz=enabled} -Dfreetype=enabled -Dfontconfig=enabled -Dtee=disabled -Dxcb=disabled -Dxlib=disabled -Dzlib=disabled \
   -Dtests=disabled -Dspectre=disabled -Dsymbol-lookup=disabled
 meson install -C _build --tag devel
@@ -410,7 +410,7 @@ meson install -C _build --tag devel
 mkdir ${DEPS}/fribidi
 $CURL https://github.com/fribidi/fribidi/releases/download/v${VERSION_FRIBIDI}/fribidi-${VERSION_FRIBIDI}.tar.xz | tar xJC ${DEPS}/fribidi --strip-components=1
 cd ${DEPS}/fribidi
-meson setup _build --default-library=static --buildtype=release --strip --prefix=${TARGET} ${MESON} \
+meson setup _build --default-library=static --buildtype=release --strip --prefix=${TARGET} --datadir=${TARGET}/share ${MESON} \
   -Ddocs=false -Dbin=false -Dtests=false
 meson install -C _build --tag devel
 
@@ -419,7 +419,7 @@ $CURL https://download.gnome.org/sources/pango/$(without_patch $VERSION_PANGO)/p
 cd ${DEPS}/pango
 # Disable utils and tools
 sed -i'.bak' "/subdir('utils')/{N;d;}" meson.build
-meson setup _build --default-library=static --buildtype=release --strip --prefix=${TARGET} ${MESON} \
+meson setup _build --default-library=static --buildtype=release --strip --prefix=${TARGET} --datadir=${TARGET}/share ${MESON} \
   -Ddocumentation=false -Dbuild-testsuite=false -Dbuild-examples=false -Dintrospection=disabled -Dfontconfig=enabled
 meson install -C _build --tag devel
 
@@ -443,7 +443,7 @@ EOL
 cargo update zune-jpeg
 # Remove the --static flag from the PKG_CONFIG env since Rust does not
 # parse that correctly.
-PKG_CONFIG=${PKG_CONFIG/ --static/} meson setup _build --default-library=static --buildtype=release --strip --prefix=${TARGET} ${MESON} \
+PKG_CONFIG=${PKG_CONFIG/ --static/} meson setup _build --default-library=static --buildtype=release --strip --prefix=${TARGET} --datadir=${TARGET}/share ${MESON} \
   -Dintrospection=disabled -Dpixbuf{,-loader}=disabled -Ddocs=disabled -Dvala=disabled -Dtests=false \
   ${RUST_TARGET:+-Dtriplet=$RUST_TARGET}
 meson install -C _build --tag devel
@@ -451,7 +451,7 @@ meson install -C _build --tag devel
 mkdir ${DEPS}/cgif
 $CURL https://github.com/dloebl/cgif/archive/v${VERSION_CGIF}.tar.gz | tar xzC ${DEPS}/cgif --strip-components=1
 cd ${DEPS}/cgif
-CFLAGS="${CFLAGS} -O3" meson setup _build --default-library=static --buildtype=release --strip --prefix=${TARGET} ${MESON} \
+CFLAGS="${CFLAGS} -O3" meson setup _build --default-library=static --buildtype=release --strip --prefix=${TARGET} --datadir=${TARGET}/share ${MESON} \
   -Dtests=false
 meson install -C _build --tag devel
 
@@ -477,7 +477,7 @@ if [ "$LINUX" = true ]; then
 fi
 # Disable building man pages, gettext po files, tools, and (fuzz-)tests
 sed -i'.bak' "/subdir('man')/{N;N;N;N;d;}" meson.build
-CFLAGS="${CFLAGS} -O3" CXXFLAGS="${CXXFLAGS} -O3" meson setup _build --default-library=shared --buildtype=release --strip --prefix=${TARGET} ${MESON} \
+CFLAGS="${CFLAGS} -O3" CXXFLAGS="${CXXFLAGS} -O3" meson setup _build --default-library=shared --buildtype=release --strip --prefix=${TARGET} --datadir=${TARGET}/share ${MESON} \
   -Ddeprecated=false -Dexamples=false -Dintrospection=disabled -Dmodules=disabled -Dcfitsio=disabled -Dfftw=disabled -Djpeg-xl=disabled \
   ${WITHOUT_HIGHWAY:+-Dhighway=disabled} -Dorc=disabled -Dmagick=disabled -Dmatio=disabled -Dnifti=disabled -Dopenexr=disabled \
   -Dopenjpeg=disabled -Dopenslide=disabled -Dpdfium=disabled -Dpoppler=disabled -Dquantizr=disabled \
