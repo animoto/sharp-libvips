@@ -45,7 +45,7 @@ if [ "$LINUX" = true ]; then
 fi
 
 # Common build paths and flags
-export PKG_CONFIG_LIBDIR="${TARGET}/lib/pkgconfig:${TARGET}/lib/${CHOST}/pkgconfig"
+export PKG_CONFIG_LIBDIR="${TARGET}/lib/pkgconfig"
 export PATH="${PATH}:${TARGET}/bin"
 export LD_LIBRARY_PATH="${TARGET}/lib"
 export CFLAGS="${FLAGS}"
@@ -128,7 +128,7 @@ VERSION_RSVG=2.60.0
 VERSION_AOM=3.12.0
 VERSION_HEIF=1.19.7
 VERSION_CGIF=0.5.0
-VERSION_DE265=1.0.15
+VERSION_DE265=1.0.13
 
 # Check for newer versions
 # Skip by setting the VERSION_LATEST_REQUIRED environment variable to "false"
