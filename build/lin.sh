@@ -45,7 +45,7 @@ if [ "$LINUX" = true ]; then
 fi
 
 # Common build paths and flags
-export PKG_CONFIG_LIBDIR="${TARGET}/lib/pkgconfig"
+export PKG_CONFIG_LIBDIR="${TARGET}/lib/pkgconfig:${TARGET}/lib/${CHOST}/pkgconfig"
 export PATH="${PATH}:${TARGET}/bin"
 export LD_LIBRARY_PATH="${TARGET}/lib"
 export CFLAGS="${FLAGS}"
