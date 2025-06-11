@@ -142,7 +142,7 @@ $CURL https://gist.github.com/kleisauke/284d685efa00908da99ea6afbaaf39ae/raw/936
 meson setup _build --default-library=static --buildtype=release --strip --prefix=${TARGET} --datadir=${TARGET}/share ${MESON} \
   --force-fallback-for=gvdb -Dintrospection=disabled -Dnls=disabled -Dlibmount=disabled -Dsysprof=disabled -Dlibelf=disabled \
   -Dtests=false -Dglib_assert=false -Dglib_checks=false -Dglib_debug=disabled ${DARWIN:+-Dbsymbolic_functions=false}
-# bin-devel is needed for glib-compile-resources
+# bin-devel is needed for glib-mkenums
 meson install -C _build --tag bin-devel,devel
 
 mkdir ${DEPS}/xml2
@@ -284,6 +284,8 @@ make install-strip libarchive_man_MANS=
 mkdir ${DEPS}/fontconfig
 $CURL https://gitlab.freedesktop.org/fontconfig/fontconfig/-/archive/${VERSION_FONTCONFIG}/fontconfig-${VERSION_FONTCONFIG}.tar.gz | tar xzC ${DEPS}/fontconfig --strip-components=1
 cd ${DEPS}/fontconfig
+# Disable install of gettext files
+sed -i'.bak' "/subdir('its')/d" meson.build
 meson setup _build --default-library=static --buildtype=release --strip --prefix=${TARGET} --datadir=${TARGET}/share ${MESON} \
   -Dcache-build=disabled -Ddoc=disabled -Dnls=disabled -Dtests=disabled -Dtools=disabled
 meson install -C _build --tag devel
