@@ -39,8 +39,8 @@ jobs:
       - name: Install dependencies (macOS)
         if: runner.os == 'macOS'
         run: |
-          pip3 install meson==1.7.2 ninja packaging
-          brew install automake nasm
+          pipx install meson
+          brew install automake nasm python-packaging
       - name: Build ${{ matrix.platform }}
         run: ./build.sh ${{ matrix.platform }}
       - name: Upload ${{ matrix.platform }} artifact
