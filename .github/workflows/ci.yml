@@ -1,9 +1,11 @@
 name: CI
 on:
   push:
-    branches: ['**']
-  pull_request:
-    branches: ['**']
+    branches:
+      - '**'
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 permissions: {}
 jobs:
   check-latest-versions:
