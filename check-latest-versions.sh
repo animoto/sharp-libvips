@@ -30,7 +30,7 @@ version_latest "aom" "$VERSION_AOM" "17628"
 version_latest "archive" "$VERSION_ARCHIVE" "libarchive/libarchive"
 version_latest "cairo" "$VERSION_CAIRO" "247"
 version_latest "cgif" "$VERSION_CGIF" "dloebl/cgif"
-version_latest "de265" "$VERSION_DE265" "strukturag/libde265" # ADDED FOR ANIMOTO HEIC SUPPORT, DO NOT REMOVE OR ALTER UNLESS YOU KNOW WHAT YOU ARE DOING
+version_latest "de265" "$VERSION_DE265" "strukturag/libde265" # ADDED FOR ANIMOTO HEIC SUPPORT - DO NOT REMOVE OR ALTER UNLESS YOU KNOW WHAT YOU ARE DOING
 version_latest "exif" "$VERSION_EXIF" "libexif/libexif"
 version_latest "expat" "$VERSION_EXPAT" "770"
 version_latest "ffi" "$VERSION_FFI" "1611"
