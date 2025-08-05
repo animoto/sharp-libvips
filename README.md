@@ -14,7 +14,7 @@ Run the top-level [build script](build.sh) without parameters for help.
 
 ### Linux
 
-One [build script](build/lin.sh) is used to (cross-)compile
+One [build script](build/posix.sh) is used to (cross-)compile
 the same shared libraries within multiple containers.
 
 * [x64 glibc](platforms/linux-x64/Dockerfile)
@@ -23,6 +23,7 @@ the same shared libraries within multiple containers.
 * [ARM64v8-A glibc](platforms/linux-arm64v8/Dockerfile)
 * [ARM64v8-A musl](platforms/linuxmusl-arm64v8/Dockerfile)
 * [ppc64le glibc](platforms/linux-ppc64le/Dockerfile)
+* [RISC-V 64-bit glibc](platforms/linux-riscv64/Dockerfile)
 * [s390x glibc](platforms/linux-s390x/Dockerfile)
 
 ### Windows
@@ -35,8 +36,8 @@ static "web" releases are [post-processed](build/win.sh) within a [container](pl
 Uses a macOS virtual machine hosted by GitHub to compile the shared libraries.
 The dylib files are compiled within the same build script as Linux.
 
-* x64 (native)
-* ARM64 (cross-compiled)
+* x64
+* ARM64
 
 Dependency paths are modified to use the relative `@rpath` with `install_name_tool`.
 

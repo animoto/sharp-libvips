@@ -1,24 +1,25 @@
-FROM debian:bullseye
+FROM debian:trixie
 LABEL maintainer="Lovell Fuller <npm@lovell.info>"
 
-# Create Debian 11 (glibc 2.31) container suitable for cross-compiling Linux ppc64le binaries
+# Create Debian 13 (glibc 2.41) container suitable for cross-compiling Linux RISC-V 64-bit binaries
 
 # Path settings
 ENV \
   RUSTUP_HOME="/usr/local/rustup" \
   CARGO_HOME="/usr/local/cargo" \
-  PATH="/usr/local/cargo/bin:$PATH"
+  PATH="/usr/local/cargo/bin:/root/.local/bin:$PATH"
 
 # Build dependencies
 RUN \
   apt-get update && \
   apt-get install -y curl && \
-  dpkg --add-architecture ppc64el && \
+  dpkg --add-architecture riscv64 && \
+  apt-get update && \
   apt-get install -y \
     autoconf \
     autopoint \
     cmake \
-    crossbuild-essential-ppc64el \
+    crossbuild-essential-riscv64 \
     gettext \
     git \
     gperf \
@@ -26,31 +27,29 @@ RUN \
     libssl-dev \
     libtool \
     ninja-build \
-    pkg-config \
-    python3-packaging \
-    python3-pip \
+    pipx \
+    pkgconf \
+    pkgconf:riscv64 \
+    python3-tomli \
     && \
   curl https://sh.rustup.rs -sSf | sh -s -- -y \
     --no-modify-path \
     --profile minimal \
-    --target powerpc64le-unknown-linux-gnu \
+    --target riscv64gc-unknown-linux-gnu \
     --default-toolchain nightly \
     && \
   cargo install cargo-c --locked && \
-  pip3 install meson==1.7.2 tomli
-
-# Handy for debugging the compiled targets in Highway (hwy_list_targets)
-#RUN apt-get install -y qemu-user-static
-#ENV QEMU_LD_PREFIX="/usr/powerpc64le-linux-gnu"
+  pipx install meson==1.7.2
 
 # Compiler settings
 ENV \
-  PKG_CONFIG="powerpc64le-linux-gnu-pkg-config --static" \
-  PLATFORM="linux-ppc64le" \
-  CHOST="powerpc64le-linux-gnu" \
-  RUST_TARGET="powerpc64le-unknown-linux-gnu" \
-  FLAGS="" \
+  PKG_CONFIG="riscv64-linux-gnu-pkg-config --static" \
+  PLATFORM="linux-riscv64" \
+  CHOST="riscv64-linux-gnu" \
+  RUST_TARGET="riscv64gc-unknown-linux-gnu" \
+  FLAGS="-march=rv64gc" \
   RUSTFLAGS="-Zlocation-detail=none -Zfmt-debug=none" \
+  WITHOUT_HIGHWAY="true" \
   MESON="--cross-file=/root/meson.ini"
 
 COPY Toolchain.cmake /root/

@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -e
 
+# Dependency version numbers
+source /packaging/versions.properties
+
 VERSION_VIPS_SHORT=${VERSION_VIPS%.[[:digit:]]*}
 
 # Common options for curl
@@ -33,14 +36,11 @@ cd /vips/vips-dev-${VERSION_VIPS_SHORT}
 rm bin/libvips-cpp-42.dll
 cp bin/*.dll lib/
 
-# Create platform.json
-printf "\"${PLATFORM}\"" >platform.json
-
 # Add third-party notices
 $CURL -O https://raw.githubusercontent.com/lovell/sharp-libvips/main/THIRD-PARTY-NOTICES.md
 
 echo "Creating tarball"
-tar czf /packaging/libvips-${VERSION_VIPS}-${PLATFORM}.tar.gz \
+tar czf /packaging/sharp-libvips-${PLATFORM}.tar.gz \
   include \
   lib/glib-2.0 \
   lib/libvips.lib \
@@ -49,7 +49,7 @@ tar czf /packaging/libvips-${VERSION_VIPS}-${PLATFORM}.tar.gz \
   THIRD-PARTY-NOTICES.md
 
 # Allow tarballs to be read outside container
-chmod 644 /packaging/libvips-${VERSION_VIPS}-${PLATFORM}.tar.*
+chmod 644 /packaging/sharp-libvips-${PLATFORM}.tar.*
 
 # Remove working directories
 rm -rf lib include *.json THIRD-PARTY-NOTICES.md

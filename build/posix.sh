@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 set -e
 
+# Dependency version numbers
+if [ -f /packaging/versions.properties ]; then
+  source /packaging/versions.properties
+fi
+
 # Remove patch version component
 without_patch() {
   echo "${1%.[[:digit:]]*}"
@@ -70,9 +75,6 @@ if [ "$DARWIN" = true ]; then
   mkdir -p $CARGO_HOME
   mkdir -p $RUSTUP_HOME
   export PATH="${CARGO_HOME}/bin:${PATH}"
-  if [ "$PLATFORM" == "darwin-arm64v8" ]; then
-    export DARWIN_ARM=true
-  fi
 fi
 
 # Run as many parallel jobs as there are available CPU cores
@@ -100,96 +102,12 @@ unset PKG_CONFIG_PATH
 # Common options for curl
 CURL="curl --silent --location --retry 3 --retry-max-time 30"
 
-# Dependency version numbers
-VERSION_ZLIB_NG=2.2.4
-VERSION_FFI=3.4.7
-VERSION_GLIB=2.84.1
-VERSION_XML2=2.14.1
-VERSION_EXIF=0.6.25
-VERSION_LCMS2=2.17
-VERSION_MOZJPEG=4.1.5
-VERSION_PNG16=1.6.47
-VERSION_SPNG=0.7.4
-VERSION_IMAGEQUANT=2.4.1
-VERSION_WEBP=1.5.0
-VERSION_TIFF=4.7.0
-VERSION_HWY=1.2.0
-VERSION_PROXY_LIBINTL=0.4
-VERSION_FREETYPE=2.13.3
-VERSION_EXPAT=2.7.1
-VERSION_ARCHIVE=3.7.9
-VERSION_FONTCONFIG=2.16.1
-VERSION_HARFBUZZ=11.0.0
-VERSION_PIXMAN=0.44.2
-VERSION_CAIRO=1.18.4
-VERSION_FRIBIDI=1.0.16
-VERSION_PANGO=1.56.3
-VERSION_RSVG=2.60.0
-VERSION_AOM=3.12.0
-VERSION_HEIF=1.19.7
-VERSION_CGIF=0.5.0
-VERSION_DE265=1.0.13
-
-# Check for newer versions
-# Skip by setting the VERSION_LATEST_REQUIRED environment variable to "false"
-VERSION_LATEST_REQUIRED=false
-ALL_AT_VERSION_LATEST=true
-version_latest() {
-  if [ "$VERSION_LATEST_REQUIRED" == "false" ]; then
-    echo "Skipping latest version check for $1"
-    return
-  fi
-  VERSION_SELECTOR="stable_versions"
-  if [[ "$4" == *"unstable"* ]]; then
-    VERSION_SELECTOR="versions"
-  fi
-  if [[ "$3" == *"/"* ]]; then
-    VERSION_LATEST=$(git -c 'versionsort.suffix=-' ls-remote --tags --refs --sort='v:refname' https://github.com/$3.git | awk -F'/' 'END{print $3}' | tr -d 'v')
-  else
-    VERSION_LATEST=$($CURL "https://release-monitoring.org/api/v2/versions/?project_id=$3" | jq -j ".$VERSION_SELECTOR[0]" | tr '_' '.')
-  fi
-  if [ "$VERSION_LATEST" != "$2" ]; then
-    ALL_AT_VERSION_LATEST=false
-    echo "$1 version $2 has been superseded by $VERSION_LATEST"
-  fi
-}
-version_latest "zlib-ng" "$VERSION_ZLIB_NG" "115592"
-version_latest "ffi" "$VERSION_FFI" "1611"
-version_latest "glib" "$VERSION_GLIB" "10024" "unstable"
-version_latest "xml2" "$VERSION_XML2" "1783"
-version_latest "exif" "$VERSION_EXIF" "1607"
-version_latest "lcms2" "$VERSION_LCMS2" "9815"
-version_latest "mozjpeg" "$VERSION_MOZJPEG" "mozilla/mozjpeg"
-version_latest "png" "$VERSION_PNG16" "1705"
-version_latest "spng" "$VERSION_SPNG" "24289"
-version_latest "webp" "$VERSION_WEBP" "1761"
-version_latest "tiff" "$VERSION_TIFF" "1738"
-version_latest "highway" "$VERSION_HWY" "205809"
-version_latest "proxy-libintl" "$VERSION_PROXY_LIBINTL" "frida/proxy-libintl"
-version_latest "freetype" "$VERSION_FREETYPE" "854"
-version_latest "expat" "$VERSION_EXPAT" "770"
-version_latest "archive" "$VERSION_ARCHIVE" "1558"
-version_latest "fontconfig" "$VERSION_FONTCONFIG" "827"
-version_latest "harfbuzz" "$VERSION_HARFBUZZ" "1299"
-version_latest "pixman" "$VERSION_PIXMAN" "3648"
-version_latest "cairo" "$VERSION_CAIRO" "247"
-version_latest "fribidi" "$VERSION_FRIBIDI" "857"
-version_latest "pango" "$VERSION_PANGO" "11783" "unstable"
-version_latest "rsvg" "$VERSION_RSVG" "5420" "unstable"
-version_latest "aom" "$VERSION_AOM" "17628"
-version_latest "heif" "$VERSION_HEIF" "64439"
-version_latest "cgif" "$VERSION_CGIF" "dloebl/cgif"
-version_latest "de265" "$VERSION_DE265" "strukturag/libde265"
-if [ "$ALL_AT_VERSION_LATEST" = "false" ]; then exit 1; fi
-
 # Download and build dependencies from source
 
 if [ "$DARWIN" = true ]; then
   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
-    | sh -s -- -y --no-modify-path --profile minimal
-  if [ "$DARWIN_ARM" = true ]; then
-    ${CARGO_HOME}/bin/rustup target add aarch64-apple-darwin
-  fi
+    | sh -s -- -y --no-modify-path --profile minimal --default-toolchain nightly
+  export RUSTFLAGS+=" -Zlocation-detail=none -Zfmt-debug=none"
   CFLAGS= cargo install cargo-c --locked
 fi
 
@@ -221,18 +139,16 @@ make install-strip
 mkdir ${DEPS}/glib
 $CURL https://download.gnome.org/sources/glib/$(without_patch $VERSION_GLIB)/glib-${VERSION_GLIB}.tar.xz | tar xJC ${DEPS}/glib --strip-components=1
 cd ${DEPS}/glib
-$CURL https://gist.github.com/kleisauke/284d685efa00908da99ea6afbaaf39ae/raw/936a6b8013d07d358c6944cc5b5f0e27db707ace/glib-without-gregex.patch | patch -p1
+$CURL https://gist.github.com/kleisauke/284d685efa00908da99ea6afbaaf39ae/raw/12773e117bd557b83ba2a7410698db41813c3fda/glib-without-gregex.patch | patch -p1
 meson setup _build --default-library=static --buildtype=release --strip --prefix=${TARGET} --datadir=${TARGET}/share ${MESON} \
   --force-fallback-for=gvdb -Dintrospection=disabled -Dnls=disabled -Dlibmount=disabled -Dsysprof=disabled -Dlibelf=disabled \
   -Dtests=false -Dglib_assert=false -Dglib_checks=false -Dglib_debug=disabled ${DARWIN:+-Dbsymbolic_functions=false}
-# bin-devel is needed for glib-compile-resources
+# bin-devel is needed for glib-mkenums
 meson install -C _build --tag bin-devel,devel
 
 mkdir ${DEPS}/xml2
 $CURL https://download.gnome.org/sources/libxml2/$(without_patch $VERSION_XML2)/libxml2-${VERSION_XML2}.tar.xz | tar xJC ${DEPS}/xml2 --strip-components=1
 cd ${DEPS}/xml2
-# https://gitlab.gnome.org/GNOME/libxml2/-/merge_requests/306
-$CURL https://gitlab.gnome.org/GNOME/libxml2/-/commit/88732cae7d6031b2fa216faa3dd542681b385117.patch | patch -p1
 meson setup _build --default-library=static --buildtype=release --strip --prefix=${TARGET} --datadir=${TARGET}/share ${MESON} \
   -Dminimum=true
 meson install -C _build --tag devel
@@ -241,13 +157,13 @@ mkdir ${DEPS}/exif
 $CURL https://github.com/libexif/libexif/releases/download/v${VERSION_EXIF}/libexif-${VERSION_EXIF}.tar.xz | tar xJC ${DEPS}/exif --strip-components=1
 cd ${DEPS}/exif
 ./configure --host=${CHOST} --prefix=${TARGET} --enable-static --disable-shared --disable-dependency-tracking \
-  --disable-nls --without-libiconv-prefix --without-libintl-prefix \
+  --disable-nls --disable-docs --without-libiconv-prefix --without-libintl-prefix \
   CPPFLAGS="${CPPFLAGS} -DNO_VERBOSE_TAG_DATA"
 make install-strip doc_DATA=
 
-mkdir ${DEPS}/lcms2
-$CURL https://github.com/mm2/Little-CMS/releases/download/lcms${VERSION_LCMS2}/lcms2-${VERSION_LCMS2}.tar.gz | tar xzC ${DEPS}/lcms2 --strip-components=1
-cd ${DEPS}/lcms2
+mkdir ${DEPS}/lcms
+$CURL https://github.com/mm2/Little-CMS/releases/download/lcms${VERSION_LCMS}/lcms2-${VERSION_LCMS}.tar.gz | tar xzC ${DEPS}/lcms --strip-components=1
+cd ${DEPS}/lcms
 CFLAGS="${CFLAGS} -O3" meson setup _build --default-library=static --buildtype=release --strip --prefix=${TARGET} --datadir=${TARGET}/share ${MESON} \
   -Dtests=disabled 
 meson install -C _build --tag devel
@@ -255,16 +171,19 @@ meson install -C _build --tag devel
 mkdir ${DEPS}/aom
 $CURL https://storage.googleapis.com/aom-releases/libaom-${VERSION_AOM}.tar.gz | tar xzC ${DEPS}/aom --strip-components=1
 cd ${DEPS}/aom
+# Downgrade minimum required CMake version to 3.13 - https://aomedia.googlesource.com/aom/+/597a35fbc9837e33366a1108631d9c72ee7a49e7
+find . -name 'CMakeLists.txt' -o -name '*.cmake' | xargs sed -i'.bak' "/^cmake_minimum_required/s/3.16/3.13/"
 mkdir aom_build
 cd aom_build
 AOM_AS_FLAGS="${FLAGS}" cmake -G"Unix Makefiles" \
   -DCMAKE_TOOLCHAIN_FILE=${ROOT}/Toolchain.cmake -DCMAKE_INSTALL_PREFIX=${TARGET} -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_BUILD_TYPE=MinSizeRel \
   -DBUILD_SHARED_LIBS=FALSE -DENABLE_DOCS=0 -DENABLE_TESTS=0 -DENABLE_TESTDATA=0 -DENABLE_TOOLS=0 -DENABLE_EXAMPLES=0 \
-  -DCONFIG_PIC=1 -DENABLE_NASM=1 ${WITHOUT_NEON:+-DENABLE_NEON=0} ${DARWIN_ARM:+-DCONFIG_RUNTIME_CPU_DETECT=0} \
+  -DCONFIG_PIC=1 -DENABLE_NASM=1 ${WITHOUT_NEON:+-DENABLE_NEON=0} \
   -DCONFIG_AV1_HIGHBITDEPTH=0 -DCONFIG_WEBM_IO=0 \
   ..
 make install/strip
 
+# ADDED FOR ANIMOTO HEIC SUPPORT - DO NOT REMOVE OR ALTER UNLESS YOU KNOW WHAT YOU ARE DOING
 # Support HEIC https://github.com/animoto/sharp-libvips/commit/b83e6d195f01bdcfe07fd3a8b6049eb066244c51
 mkdir ${DEPS}/de265
 curl -Ls https://github.com/strukturag/libde265/releases/download/v${VERSION_DE265}/libde265-${VERSION_DE265}.tar.gz | tar xzC ${DEPS}/de265 --strip-components=1
@@ -291,9 +210,9 @@ cmake -G"Unix Makefiles" \
   -DENABLE_STATIC=TRUE -DENABLE_SHARED=FALSE -DWITH_JPEG8=1 -DWITH_TURBOJPEG=FALSE -DPNG_SUPPORTED=FALSE
 make install/strip
 
-mkdir ${DEPS}/png16
-$CURL https://downloads.sourceforge.net/project/libpng/libpng16/${VERSION_PNG16}/libpng-${VERSION_PNG16}.tar.xz | tar xJC ${DEPS}/png16 --strip-components=1
-cd ${DEPS}/png16
+mkdir ${DEPS}/png
+$CURL https://github.com/pnggroup/libpng/archive/v${VERSION_PNG}.tar.gz | tar xzC ${DEPS}/png --strip-components=1
+cd ${DEPS}/png
 ./configure --host=${CHOST} --prefix=${TARGET} --enable-static --disable-shared --disable-dependency-tracking \
   --disable-tools --without-binconfigs --disable-unversioned-libpng-config
 make install-strip dist_man_MANS=
@@ -367,6 +286,10 @@ make install-strip libarchive_man_MANS=
 mkdir ${DEPS}/fontconfig
 $CURL https://gitlab.freedesktop.org/fontconfig/fontconfig/-/archive/${VERSION_FONTCONFIG}/fontconfig-${VERSION_FONTCONFIG}.tar.gz | tar xzC ${DEPS}/fontconfig --strip-components=1
 cd ${DEPS}/fontconfig
+# Disable install of gettext files
+sed -i'.bak' "/subdir('its')/d" meson.build
+# Silence FcInit warnings
+sed -i'.bak' "/using without calling FcInit/d" src/fcobjs.c
 meson setup _build --default-library=static --buildtype=release --strip --prefix=${TARGET} --datadir=${TARGET}/share ${MESON} \
   -Dcache-build=disabled -Ddoc=disabled -Dnls=disabled -Dtests=disabled -Dtools=disabled
 meson install -C _build --tag devel
@@ -432,6 +355,8 @@ sed -i'.bak' "/cairo-rs = /s/, \"pdf\", \"ps\"//" {librsvg-c,rsvg}/Cargo.toml
 sed -i'.bak' "/subdir('rsvg_convert')/d" meson.build
 # https://gitlab.gnome.org/GNOME/librsvg/-/merge_requests/1066#note_2356762
 sed -i'.bak' "/^if host_system in \['windows'/s/, 'linux'//" meson.build
+# [PATCH] text: verify pango/fontconfig found a suitable font
+$CURL https://gitlab.gnome.org/GNOME/librsvg/-/merge_requests/1106.patch | patch -p1
 # Regenerate the lockfile after making the above changes
 cargo update --workspace
 # Remove the --static flag from the PKG_CONFIG env since Rust does not
@@ -545,22 +470,20 @@ printf "{\n\
   \"heif\": \"${VERSION_HEIF}\",\n\
   \"highway\": \"${VERSION_HWY}\",\n\
   \"imagequant\": \"${VERSION_IMAGEQUANT}\",\n\
-  \"lcms\": \"${VERSION_LCMS2}\",\n\
+  \"lcms\": \"${VERSION_LCMS}\",\n\
   \"mozjpeg\": \"${VERSION_MOZJPEG}\",\n\
   \"pango\": \"${VERSION_PANGO}\",\n\
   \"pixman\": \"${VERSION_PIXMAN}\",\n\
-  \"png\": \"${VERSION_PNG16}\",\n\
+  \"png\": \"${VERSION_PNG}\",\n\
   \"proxy-libintl\": \"${VERSION_PROXY_LIBINTL}\",\n\
   \"rsvg\": \"${VERSION_RSVG}\",\n\
   \"spng\": \"${VERSION_SPNG}\",\n\
   \"tiff\": \"${VERSION_TIFF}\",\n\
   \"vips\": \"${VERSION_VIPS}\",\n\
   \"webp\": \"${VERSION_WEBP}\",\n\
-  \"xml\": \"${VERSION_XML2}\",\n\
+  \"xml2\": \"${VERSION_XML2}\",\n\
   \"zlib-ng\": \"${VERSION_ZLIB_NG}\"\n\
 }" >versions.json
-
-printf "\"${PLATFORM}\"" >platform.json
 
 # Add third-party notices
 $CURL -O https://raw.githubusercontent.com/lovell/sharp-libvips/main/THIRD-PARTY-NOTICES.md
@@ -569,11 +492,11 @@ $CURL -O https://raw.githubusercontent.com/lovell/sharp-libvips/main/THIRD-PARTY
 ls -al lib
 rm -rf lib
 mv lib-filtered lib
-tar chzf ${PACKAGE}/libvips-${VERSION_VIPS}-${PLATFORM}.tar.gz \
+tar chzf ${PACKAGE}/sharp-libvips-${PLATFORM}.tar.gz \
   include \
   lib \
   *.json \
   THIRD-PARTY-NOTICES.md
 
 # Allow tarballs to be read outside container
-chmod 644 ${PACKAGE}/libvips-${VERSION_VIPS}-${PLATFORM}.tar.*
+chmod 644 ${PACKAGE}/sharp-libvips-${PLATFORM}.tar.*

@@ -1,13 +1,13 @@
 {
-  "name": "@img/sharp-libvips-linuxmusl-x64",
+  "name": "@img/sharp-libvips-win32-arm64",
   "version": "1.2.1",
-  "description": "Prebuilt libvips and dependencies for use with sharp on Linux (musl) x64",
+  "description": "Prebuilt libvips and dependencies for use with sharp on Windows 64-bit ARM",
   "author": "Lovell Fuller <npm@lovell.info>",
   "homepage": "https://sharp.pixelplumbing.com",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/lovell/sharp-libvips.git",
-    "directory": "npm/linuxmusl-x64"
+    "directory": "npm/win32-arm64"
   },
   "license": "LGPL-3.0-or-later",
   "funding": {
@@ -26,17 +26,5 @@
     "./lib": "./lib/index.js",
     "./package": "./package.json",
     "./versions": "./versions.json"
-  },
-  "config": {
-    "musl": ">=1.2.2"
-  },
-  "os": [
-    "linux"
-  ],
-  "libc": [
-    "musl"
-  ],
-  "cpu": [
-    "x64"
-  ]
+  }
 }
